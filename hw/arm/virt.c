@@ -154,6 +154,7 @@ static const MemMapEntry base_memmap[] = {
     [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
     [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
     [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
+	[VIRT_FOO] =                { 0x0b000000, 0x00000200 },
     /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
     [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
     [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
@@ -193,6 +194,7 @@ static const int a15irqmap[] = {
     [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
     [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
     [VIRT_PLATFORM_BUS] = 112, /* ...to 112 + PLATFORM_BUS_NUM_IRQS -1 */
+    [VIRT_FOO] = 188,
 };
 
 static const char *valid_cpus[] = {
@@ -807,6 +809,65 @@ static void create_gic(VirtMachineState *vms, MemoryRegion *mem)
     }
 }
 
+static void create_virt_foo_device(const VirtMachineState *vms) {
+    hwaddr base = vms->memmap[VIRT_FOO].base;
+    hwaddr size = vms->memmap[VIRT_FOO].size;
+    MachineState *ms = MACHINE(vms);
+    char *nodename;
+ 
+    /*
+    virt-foo@0b000000 {
+        compatible = "virt-foo";
+        reg = <0x0b000000 0x200>;
+        interrupt-parent = <&gic>;
+        interrupts = <188>;
+    }
+    */
+    fprintf(stdout, "[QEMU_VIRT_FOO]Create_virt_foo_device base is: 0x%lx, size is: 0x%lx!\n", base, size);
+    sysbus_create_simple("virt-foo", base, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_FOO]));
+    nodename = g_strdup_printf("/virt-foo@%" PRIx64, base);
+    qemu_fdt_add_subnode(ms->fdt, nodename);
+    qemu_fdt_setprop_string(ms->fdt, nodename, "compatible", "virt-foo");
+    qemu_fdt_setprop_sized_cells(ms->fdt, nodename, "reg", 2, base, 2, size);
+    qemu_fdt_setprop_cells(ms->fdt, nodename, "interrupt-parent", vms->gic_phandle);
+    qemu_fdt_setprop_cells(ms->fdt, nodename, "interrupts", \
+                          GIC_FDT_IRQ_TYPE_SPI, vms->irqmap[VIRT_FOO], \
+                          GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+ 
+    g_free(nodename);
+ 
+    return;
+}
+/*
+static void create_virt_foo_device(const VirtMachineState *vms, qemu_irq *pic)
+{
+    hwaddr base = vms->memmap[VIRT_FOO].base;
+    hwaddr size = vms->memmap[VIRT_FOO].size;
+    int irq = vms->irqmap[VIRT_FOO];
+    char *nodename;
+
+    //virt-foo@0b000000 {
+    //        compatible = "virt-foo";
+    //        reg = <0x0b000000 0x200>;
+    //        interrupt-parent = <&gic>;
+    //        interrupts = <188>;
+    //}
+
+    sysbus_create_simple("virt-foo", base, pic[irq]);
+
+    nodename = g_strdup_printf("/virt_foo@%" PRIx64, base);
+    qemu_fdt_add_subnode(vms->fdt, nodename);
+    qemu_fdt_setprop_string(vms->fdt, nodename, "compatible", "virt-foo");
+    qemu_fdt_setprop_sized_cells(vms->fdt, nodename, "reg", 2, base, 2, size);
+    qemu_fdt_setprop_cells(vms->fdt, nodename, "interrupt-parent",
+                           vms->gic_phandle);
+    qemu_fdt_setprop_cells(vms->fdt, nodename, "interrupts",
+                           GIC_FDT_IRQ_TYPE_SPI, irq,
+                           GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+
+    g_free(nodename);
+}
+*/
 static void create_uart(const VirtMachineState *vms, int uart,
                         MemoryRegion *mem, Chardev *chr)
 {
@@ -2149,6 +2210,8 @@ static void machvirt_init(MachineState *machine)
      * no backend is created the transport will just sit harmlessly idle.
      */
     create_virtio_devices(vms);
+
+	create_virt_foo_device(vms);
 
     vms->fw_cfg = create_fw_cfg(vms, &address_space_memory);
     rom_set_fw(vms->fw_cfg);

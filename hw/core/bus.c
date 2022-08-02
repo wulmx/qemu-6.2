@@ -155,8 +155,8 @@ static void bus_unparent(Object *obj)
 void qbus_init(void *bus, size_t size, const char *typename,
                DeviceState *parent, const char *name)
 {
-    object_initialize(bus, size, typename);
-    qbus_init_internal(bus, parent, name);
+    object_initialize(bus, size, typename);//virtio-pci-bus
+    qbus_init_internal(bus, parent, name);//virito-bus
 }
 
 BusState *qbus_new(const char *typename, DeviceState *parent, const char *name)

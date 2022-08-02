@@ -23,6 +23,7 @@ struct vhost_vring_state {
 
 struct vhost_vring_file {
 	unsigned int index;
+	// 就是vhost_virtqueue->masked_notifier->rfd
 	int fd; /* Pass -1 to unbind from file. */
 
 };

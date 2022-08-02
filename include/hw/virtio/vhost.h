@@ -79,7 +79,7 @@ struct vhost_dev {
     /* if non-zero, minimum required value for max_queues */
     int num_queues;
     uint64_t features;
-    uint64_t acked_features;
+    uint64_t acked_features;//记录协商后的fetures
     uint64_t backend_features;
     uint64_t protocol_features;
     uint64_t max_queues;
@@ -89,7 +89,7 @@ struct vhost_dev {
     uint64_t log_size;
     Error *migration_blocker;
     const VhostOps *vhost_ops;
-    void *opaque;
+    void *opaque;//指向vhostfd
     struct vhost_log *log;
     QLIST_ENTRY(vhost_dev) entry;
     QLIST_HEAD(, vhost_iommu) iommu_list;
@@ -104,7 +104,7 @@ extern const VhostOps vdpa_ops;
 struct vhost_net {
     struct vhost_dev dev;
     struct vhost_virtqueue vqs[2];
-    int backend;
+    int backend; //就是tap的fd
     NetClientState *nc;
 };
 

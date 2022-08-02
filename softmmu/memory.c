@@ -229,7 +229,7 @@ struct FlatRange {
     for (var = (view)->ranges; var < (view)->ranges + (view)->nr; ++var)
 
 static inline MemoryRegionSection
-section_from_flat_range(FlatRange *fr, FlatView *fv)
+section_from_flat_range(FlatRange *fr, FlatView *fv)//内联函数，空间换时间。减小stack 空间占用
 {
     return (MemoryRegionSection) {
         .mr = fr->mr,
@@ -724,7 +724,10 @@ static MemoryRegion *memory_region_get_flatview_root(MemoryRegion *mr)
     return NULL;
 }
 
-/* Render a memory topology into a list of disjoint absolute ranges. */
+/* 
+ * Render a memory topology into a list of disjoint absolute ranges. 
+ * 将树形topo MR转换成平坦模型返回
+ */
 static FlatView *generate_memory_topology(MemoryRegion *mr)
 {
     int i;
@@ -733,10 +736,12 @@ static FlatView *generate_memory_topology(MemoryRegion *mr)
     view = flatview_new(mr);
 
     if (mr) {
+        /* 将mr转成flatview */
         render_memory_region(view, mr, int128_zero(),
-                             addrrange_make(int128_zero(), int128_2_64()),
+                             addrrange_make(int128_zero(), int128_2_64()), //size为0-2^64的空间，可以认为是所有GPA
                              false, false);
     }
+    /*简化FlatView，将View中的FlatRange能合并的都合并*/
     flatview_simplify(view);
 
     view->dispatch = address_space_dispatch_new(view);
@@ -980,7 +985,7 @@ static void address_space_update_topology_pass(AddressSpace *as,
         }
     }
 }
-
+/* 初期化平坦内存，当成虚拟机的虚拟机内存条 */
 static void flatviews_init(void)
 {
     static FlatView *empty_view;

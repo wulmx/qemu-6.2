@@ -3636,6 +3636,7 @@ static void virtio_memory_listener_commit(MemoryListener *listener)
 
 static void virtio_device_realize(DeviceState *dev, Error **errp)
 {
+    trace_virtio_device_realize(dev);
     VirtIODevice *vdev = VIRTIO_DEVICE(dev);
     VirtioDeviceClass *vdc = VIRTIO_DEVICE_GET_CLASS(dev);
     Error *err = NULL;

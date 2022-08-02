@@ -27,6 +27,7 @@
 #include "hw/qdev-properties.h"
 #include "qapi/error.h"
 #include "qemu/error-report.h"
+#include "trace.h"
 #include "qemu/log.h"
 #include "qemu/module.h"
 #include "hw/pci/msi.h"
@@ -1785,9 +1786,10 @@ static void virtio_pci_device_unplugged(DeviceState *d)
         }
     }
 }
-
+/* virtio_pci net或blk的实现部分 */
 static void virtio_pci_realize(PCIDevice *pci_dev, Error **errp)
 {
+    trace_virtio_pci_realize(pci_dev);
     VirtIOPCIProxy *proxy = VIRTIO_PCI(pci_dev);
     VirtioPCIClass *k = VIRTIO_PCI_GET_CLASS(pci_dev);
     bool pcie_port = pci_bus_is_express(pci_get_bus(pci_dev)) &&
@@ -1802,7 +1804,7 @@ static void virtio_pci_realize(PCIDevice *pci_dev, Error **errp)
         proxy->flags &= ~VIRTIO_PCI_FLAG_USE_IOEVENTFD;
     }
 
-    /*
+    /* 设置pci bar配置空间
      * virtio pci bar layout used by default.
      * subclasses can re-arrange things if needed.
      *
@@ -1914,10 +1916,10 @@ static void virtio_pci_realize(PCIDevice *pci_dev, Error **errp)
          */
         pci_dev->cap_present &= ~QEMU_PCI_CAP_EXPRESS;
     }
-
+    //注册virtio-bus 总线，将总线挂载proxy->bus上
     virtio_pci_bus_new(&proxy->bus, sizeof(proxy->bus), proxy);
     if (k->realize) {
-        k->realize(proxy, errp);
+        k->realize(proxy, errp);//回调函数virtio_net_pci_realize
     }
 }
 
@@ -2002,7 +2004,7 @@ static void virtio_pci_dc_realize(DeviceState *qdev, Error **errp)
         pci_dev->cap_present |= QEMU_PCI_CAP_EXPRESS;
     }
 
-    vpciklass->parent_dc_realize(qdev, errp);
+    vpciklass->parent_dc_realize(qdev, errp);//virtio pci设备的父设备pci的实现，即回调 pci_qdev_realize
 }
 
 static void virtio_pci_class_init(ObjectClass *klass, void *data)

@@ -46,7 +46,7 @@
 /* Specify an eventfd file descriptor to signal on log write. */
 #define VHOST_SET_LOG_FD _IOW(VHOST_VIRTIO, 0x07, int)
 
-/* Ring setup. */
+/* Ring setup.设置每个队列的队列深度 */
 /* Set number of descriptors in ring. This parameter can not
  * be modified while ring is running (bound to a device). */
 #define VHOST_SET_VRING_NUM _IOW(VHOST_VIRTIO, 0x10, struct vhost_vring_state)

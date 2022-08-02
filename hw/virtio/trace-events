@@ -63,6 +63,10 @@ virtio_queue_notify(void *vdev, int n, void *vq) "vdev %p n %d vq %p"
 virtio_notify_irqfd(void *vdev, void *vq) "vdev %p vq %p"
 virtio_notify(void *vdev, void *vq) "vdev %p vq %p"
 virtio_set_status(void *vdev, uint8_t val) "vdev %p val %u"
+virtio_device_realize(void *dev) "dev %p"
+
+# virtio-pci.c
+virtio_pci_realize(void *pci_dev) "pci_dev %p"
 
 # virtio-rng.c
 virtio_rng_guest_not_ready(void *rng) "rng %p: guest not ready"

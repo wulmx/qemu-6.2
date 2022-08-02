@@ -1272,7 +1272,7 @@ static int vhost_virtqueue_set_busyloop_timeout(struct vhost_dev *dev,
         return -EINVAL;
     }
 
-    r = dev->vhost_ops->vhost_set_vring_busyloop_timeout(dev, &state);
+    r = dev->vhost_ops->(dev, &state);
     if (r) {
         VHOST_OPS_DEBUG("vhost_set_vring_busyloop_timeout failed");
         return r;
@@ -1324,21 +1324,21 @@ int vhost_dev_init(struct vhost_dev *hdev, void *opaque,
     hdev->vdev = NULL;
     hdev->migration_blocker = NULL;
 
-    r = vhost_set_backend_type(hdev, backend_type);
+    r = vhost_set_backend_type(hdev, backend_type);//设置后端模式为VHOST_BACKEND_TYPE_KERNEL
     assert(r >= 0);
 
-    r = hdev->vhost_ops->vhost_backend_init(hdev, opaque, errp);
+    r = hdev->vhost_ops->vhost_backend_init(hdev, opaque, errp);//回调vhost_kernel_init，设置opaque ？
     if (r < 0) {
         goto fail;
     }
 
-    r = hdev->vhost_ops->vhost_set_owner(hdev);
+    r = hdev->vhost_ops->vhost_set_owner(hdev);//回调kernel_ops.vhost_kernel_set_owner，主要和内核通信建立vhost-pid内核线程
     if (r < 0) {
         error_setg_errno(errp, -r, "vhost_set_owner failed");
         goto fail;
     }
 
-    r = hdev->vhost_ops->vhost_get_features(hdev, &features);
+    r = hdev->vhost_ops->vhost_get_features(hdev, &features);//获取vhost 的feature主要是一些virtio的feature
     if (r < 0) {
         error_setg_errno(errp, -r, "vhost_get_features failed");
         goto fail;

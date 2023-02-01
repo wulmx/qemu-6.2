@@ -348,7 +348,16 @@ int kvm_physical_memory_addr_from_host(KVMState *s, void *ram,
 
     return ret;
 }
-
+/* 1) Qemu利用iotcl控制KVM实现EPT的映射，映射的过程中必然要申请物理页面
+ * Qemu是应用程序，唯一可见的只是HVA，这时候又需要借助mmap了，Qemu会根据虚机的ram大小，
+ * 即GPA大小范围，然后mmap出与之对应的大小，即HVA。
+ * 通过KVM_SET_USER_MEMORY_REGION命令控制KVM，与这个命令一起传入的参数主要包括两个值，
+ * guest_phys_addr代表虚机GPA地址起始，userspace_addr代表上面mmap得到的首地址（HVA）。
+ * 传入进去后，KVM就会为当前虚机GPA建立EPT映射表实现GPA->HPA，同时会为VMM建立HVA->HPA映射。
+ * 2）当vm_exit发生时，VMM需要对异常进行处理，异常发生时VMM能够获取到GPA，有时VMM需要访问虚机GPA对应的HPA，
+ * VMM的映射和虚机的映射方式不同，是通过VMM完成HVA->HPA，且只能通过HVA才能访问HPA，
+ * 这就需要VMM将GPA及HVA的对应关系维护起来.
+ */
 static int kvm_set_user_memory_region(KVMMemoryListener *kml, KVMSlot *slot, bool new)
 {
     KVMState *s = kvm_state;

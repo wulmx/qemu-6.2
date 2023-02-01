@@ -235,6 +235,12 @@ static uint64_t edu_mmio_read(void *opaque, hwaddr addr, unsigned size)
     return val;
 }
 
+/*
+mmio没有ept映射所以会发生vm exit 到 qemu ， qemu会根据 MMIO的读写回调
+address_space_rw->address_space_write-->flatview_write-> .....
+MMIO回调根据设备的功能进行模拟？？
+完成模拟后可能会发送中断到 Guest ， 从而完成MMIO 访问
+*/
 static void edu_mmio_write(void *opaque, hwaddr addr, uint64_t val,
                 unsigned size)
 {
@@ -380,7 +386,7 @@ static void pci_edu_realize(PCIDevice *pdev, Error **errp)
 
     memory_region_init_io(&edu->mmio, OBJECT(edu), &edu_mmio_ops, edu,
                     "edu-mmio", 1 * MiB);
-    pci_register_bar(pdev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &edu->mmio);
+    pci_register_bar(pdev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &edu->mmio);//注册为bar0
 }
 
 static void pci_edu_uninit(PCIDevice *pdev)

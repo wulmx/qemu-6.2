@@ -482,6 +482,7 @@ static int vhost_user_write(struct vhost_dev *dev, VhostUserMsg *msg,
         return -1;
     }
 
+    trace_vhost_user_write(msg->hdr.request, msg->hdr.flags);
     return 0;
 }
 
@@ -1597,6 +1598,13 @@ static gboolean slave_read(QIOChannel *ioc, GIOCondition condition,
         ret = vhost_user_slave_handle_config_change(dev);
         break;
     case VHOST_USER_SLAVE_VRING_HOST_NOTIFIER_MSG:
+    /*
+     * 目前用户态性能差怀疑是我们的设备notify的地址没法mmap到qemu，
+     * 所以导致中断触发还是软件处理，所以比较慢，?
+	 * 参照内核代码 drivers/virtio/virtio_pci_modern_dev.c
+	 * 读取并设置 notify_offset_multiplier 地址，用于notify，如果notify_offset_multiplier为0 
+	 * 所有notify到第一个队列会造成性能影响
+     */
         ret = vhost_user_slave_handle_vring_host_notifier(dev, &payload.area,
                                                           fd ? fd[0] : -1);
         break;

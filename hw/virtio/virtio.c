@@ -2547,7 +2547,7 @@ static void virtio_irq(VirtQueue *vq)
     virtio_notify_vector(vq->vdev, vq->vector);
 }
 
-void virtio_notify(VirtIODevice *vdev, VirtQueue *vq)
+void virtio_notify(VirtIODevice *vdev, VirtQueue *vq)//wlm: host 往guest 注入中断
 {
     WITH_RCU_READ_LOCK_GUARD() {
         if (!virtio_should_notify(vdev, vq)) {

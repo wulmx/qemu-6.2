@@ -316,7 +316,7 @@ static void virtio_ioport_write(void *opaque, uint32_t addr, uint32_t val)
             virtio_pci_reset(DEVICE(proxy));
         }
         else
-            virtio_queue_set_addr(vdev, vdev->queue_sel, pa);
+            virtio_queue_set_addr(vdev, vdev->queue_sel, pa);//设置 vring 共享内存的qemu 端也就是后端
         break;
     case VIRTIO_PCI_QUEUE_SEL:
         if (val < VIRTIO_QUEUE_MAX)

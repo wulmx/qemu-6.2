@@ -1271,8 +1271,7 @@ static int vhost_virtqueue_set_busyloop_timeout(struct vhost_dev *dev,
     if (!dev->vhost_ops->vhost_set_vring_busyloop_timeout) {
         return -EINVAL;
     }
-
-    r = dev->vhost_ops->(dev, &state);
+	r = dev->vhost_ops->vhost_set_vring_busyloop_timeout(dev, &state);
     if (r) {
         VHOST_OPS_DEBUG("vhost_set_vring_busyloop_timeout failed");
         return r;

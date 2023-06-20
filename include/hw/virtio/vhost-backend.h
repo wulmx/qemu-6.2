@@ -15,9 +15,9 @@
 
 typedef enum VhostBackendType {
     VHOST_BACKEND_TYPE_NONE = 0,
-    VHOST_BACKEND_TYPE_KERNEL = 1,
-    VHOST_BACKEND_TYPE_USER = 2,
-    VHOST_BACKEND_TYPE_VDPA = 3,
+    VHOST_BACKEND_TYPE_KERNEL = 1,/* 将dataplane卸载到kernel，即vhost-net，vhost-net模块负责virtio后端数据的处理 */
+    VHOST_BACKEND_TYPE_USER = 2,/* 将dataplane卸载到用户态的程序，即vhost-user，通常就是dpdk进程 */
+    VHOST_BACKEND_TYPE_VDPA = 3,/* 将dataplane卸载到vdpa设备，该设备可以实现dataplane的硬件卸载 */
     VHOST_BACKEND_TYPE_MAX = 4,
 } VhostBackendType;
 

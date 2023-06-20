@@ -2906,9 +2906,10 @@ int kvm_cpu_exec(CPUState *cpu)
                           run->io.count);
             ret = 0;
             break;
-        case KVM_EXIT_MMIO:
+        case KVM_EXIT_MMIO:    	/* 判断返回的原因是MMIO读写引起的 */
             DPRINTF("handle_mmio\n");
             /* Called outside BQL */
+            /* 遍历地址空间，找到MMIO读写的内存区间所在的MR，执行对应的回调函数 */
             address_space_rw(&address_space_memory,
                              run->mmio.phys_addr, attrs,
                              run->mmio.data,

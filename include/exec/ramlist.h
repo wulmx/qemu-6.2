@@ -41,6 +41,7 @@ typedef struct RAMBlockNotifier RAMBlockNotifier;
 #define DIRTY_MEMORY_BLOCK_SIZE ((ram_addr_t)256 * 1024 * 8)
 typedef struct {
     struct rcu_head rcu;
+    /* 存放记录脏页的位图，一个block元素可以表示的内存范围是256K个内存页 */
     unsigned long *blocks[];
 } DirtyMemoryBlocks;
 
@@ -48,7 +49,9 @@ typedef struct RAMList {
     QemuMutex mutex;
     RAMBlock *mru_block;
     /* RCU-enabled, writes protected by the ramlist lock. */
+    /* 虚机占用的所有主机上的RAM内存块集合 */
     QLIST_HEAD(, RAMBlock) blocks;
+    /* 用户态从内核获取虚机脏页信息时保存到的结构体 */
     DirtyMemoryBlocks *dirty_memory[DIRTY_MEMORY_NUM];
     uint32_t version;
     QLIST_HEAD(, RAMBlockNotifier) ramblock_notifiers;

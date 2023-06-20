@@ -292,7 +292,7 @@ static void vhost_kernel_set_iotlb_callback(struct vhost_dev *dev,
     else
         qemu_set_fd_handler((uintptr_t)dev->opaque, NULL, NULL, NULL);
 }
-
+/* 在kernel作为vhost后端的场景下，kernel_ops是qemu定义的与vhost-net交互的vhost api最小集 */
 const VhostOps kernel_ops = {
         .backend_type = VHOST_BACKEND_TYPE_KERNEL,
         .vhost_backend_init = vhost_kernel_init,
